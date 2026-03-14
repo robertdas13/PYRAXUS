@@ -86,7 +86,6 @@ export const services = [
 ];
 
 export const socialLinks = [
-  { platform: "GitHub", url: "https://github.com", icon: "Github" },
   { platform: "LinkedIn", url: "https://linkedin.com", icon: "Linkedin" },
   { platform: "Instagram", url: "https://instagram.com", icon: "Instagram" },
   { platform: "Twitter", url: "https://twitter.com", icon: "Twitter" }

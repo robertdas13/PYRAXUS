@@ -16,7 +16,7 @@ const About = () => {
           <div className="about-image-wrapper">
             <div className="about-glow"></div>
             <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=500&fit=crop&crop=faces"
+              src="/profile-photo.png"
               alt={aboutData.name}
               className="about-image"
             />
