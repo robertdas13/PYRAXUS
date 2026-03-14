@@ -1013,3 +1013,13 @@ body {
     padding: 0 1rem;
   }
 }
+
+/* Hide Emergent Watermark */
+#emergent-badge,
+a[href*="emergent.sh"],
+[id*="emergent"],
+[class*="emergent"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
