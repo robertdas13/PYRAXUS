@@ -86,9 +86,9 @@ export const services = [
 ];
 
 export const socialLinks = [
-  { platform: "LinkedIn", url: "https://linkedin.com", icon: "Linkedin" },
-  { platform: "Instagram", url: "https://instagram.com", icon: "Instagram" },
-  { platform: "Twitter", url: "https://twitter.com", icon: "Twitter" }
+  { platform: "LinkedIn", url: "https://www.linkedin.com/in/mr-robert-das-1533a3283?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app", icon: "Linkedin" },
+  { platform: "Instagram", url: "https://www.instagram.com/_.pyraxus._13?igsh=bmZvaHZ1Mzk2bWpm", icon: "Instagram" },
+  { platform: "Twitter", url: "https://x.com/Mr_Robert_Das", icon: "Twitter" }
 ];
 
 export const aboutData = {
