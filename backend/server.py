@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -113,6 +113,24 @@ async def submit_contact(contact_data: ContactCreate):
         # Insert into database
         result = await db.contacts.insert_one(doc)
         
+        # Mock Email Notification (logged to backend)
+        logger.info("=" * 80)
+        logger.info("📧 NEW CONTACT FORM SUBMISSION - EMAIL NOTIFICATION")
+        logger.info("=" * 80)
+        logger.info(f"To: pyraxus13@gmail.com")
+        logger.info(f"Subject: New Contact Form Message from {contact.name}")
+        logger.info(f"")
+        logger.info(f"You have received a new message through your PYRAXUS portfolio:")
+        logger.info(f"")
+        logger.info(f"Name: {contact.name}")
+        logger.info(f"Email: {contact.email}")
+        logger.info(f"Message:")
+        logger.info(f"{contact.message}")
+        logger.info(f"")
+        logger.info(f"Submitted at: {contact.createdAt.isoformat()}")
+        logger.info(f"Contact ID: {contact.id}")
+        logger.info("=" * 80)
+        
         logger.info(f"Contact form submitted: {contact.name} ({contact.email})")
         
         return {
@@ -148,6 +166,117 @@ async def get_contacts():
         }
     except Exception as e:
         logger.error(f"Error fetching contacts: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch contacts")
+
+
+# Admin Authentication
+ADMIN_PASSWORD = "AS23T3587"
+
+def verify_admin_password(password: str = Header(..., alias="X-Admin-Password")):
+    if password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid admin password")
+    return True
+
+
+# Admin Login Endpoint
+@api_router.post("/admin/login")
+async def admin_login(password: str = Header(..., alias="X-Admin-Password")):
+    if password == ADMIN_PASSWORD:
+        return {
+            "success": True,
+            "message": "Admin authenticated successfully"
+        }
+    raise HTTPException(status_code=401, detail="Invalid admin password")
+
+
+# Admin: Update Contact Status
+class ContactStatusUpdate(BaseModel):
+    status: str = Field(..., pattern="^(new|read|replied)$")
+
+
+@api_router.patch("/admin/contacts/{contact_id}/status")
+async def update_contact_status(
+    contact_id: str,
+    status_update: ContactStatusUpdate,
+    _: bool = Depends(verify_admin_password)
+):
+    try:
+        result = await db.contacts.update_one(
+            {"id": contact_id},
+            {"$set": {"status": status_update.status}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Contact not found")
+        
+        logger.info(f"Admin updated contact {contact_id} status to {status_update.status}")
+        
+        return {
+            "success": True,
+            "message": f"Contact status updated to {status_update.status}"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating contact status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update contact status")
+
+
+# Admin: Delete Contact
+@api_router.delete("/admin/contacts/{contact_id}")
+async def delete_contact(
+    contact_id: str,
+    _: bool = Depends(verify_admin_password)
+):
+    try:
+        result = await db.contacts.delete_one({"id": contact_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Contact not found")
+        
+        logger.info(f"Admin deleted contact {contact_id}")
+        
+        return {
+            "success": True,
+            "message": "Contact deleted successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting contact: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete contact")
+
+
+# Admin: Get Contacts with Filters
+@api_router.get("/admin/contacts")
+async def get_admin_contacts(
+    status: Optional[str] = None,
+    _: bool = Depends(verify_admin_password)
+):
+    try:
+        # Build query filter
+        query = {}
+        if status:
+            query["status"] = status
+        
+        # Fetch contacts
+        contacts = await db.contacts.find(query, {"_id": 0}).to_list(1000)
+        
+        # Convert ISO string timestamps back to datetime objects
+        for contact in contacts:
+            if isinstance(contact.get('createdAt'), str):
+                contact['createdAt'] = datetime.fromisoformat(contact['createdAt'])
+        
+        # Sort by creation date (newest first)
+        contacts.sort(key=lambda x: x.get('createdAt', datetime.min), reverse=True)
+        
+        return {
+            "success": True,
+            "data": contacts,
+            "total": len(contacts)
+        }
+    except Exception as e:
+        logger.error(f"Error fetching admin contacts: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch contacts")
 
 # Include the router in the main app
