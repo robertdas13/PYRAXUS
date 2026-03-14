@@ -112,9 +112,9 @@ export const aboutData = {
   name: "Robert Das",
   title: "UI/UX Designer & Web Developer",
   location: "Tinsukia, Assam, India",
-  email: "hello@pyraxus.dev",
-  bio: "I'm Robert Das, a UI/UX Designer and Web Developer from Assam. I build modern, visually powerful websites and digital products under my brand PYRAXUS. My focus is creating clean interfaces, smooth user experiences, and high-performance websites that leave a lasting impression.",
-  experience: "3+",
-  projects: "50+",
+  email: "rd21092007@gmail.com",
+  bio: "I'm Robert Das, a passionate UI/UX Designer and Web Developer from Tinsukia, Assam, and the creator of the digital brand PYRAXUS. I specialize in crafting modern, high-impact websites and intuitive user experiences that blend creativity with performance. My focus is not just designing interfaces, but building digital products that are visually powerful, user-centered, and built to scale. Through PYRAXUS, I help individuals, startups, and businesses transform their ideas into sleek, functional, and memorable digital experiences. Every project I work on is driven by precision, innovation, and a commitment to delivering designs that stand out in today's competitive digital world.",
+  experience: "1+",
+  projects: "25+",
   clients: "30+"
 };
