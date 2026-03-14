@@ -50,8 +50,8 @@ const Hero = () => {
           <div className="hero-glow"></div>
           <div className="hero-image">
             <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces"
-              alt="Robert Das"
+              src="/pyraxus-logo.png"
+              alt="PYRAXUS Brand Logo"
               className="profile-image"
             />
           </div>
