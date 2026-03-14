@@ -170,7 +170,7 @@ async def get_contacts():
 
 
 # Admin Authentication
-ADMIN_PASSWORD = "AS23T3587"
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'default_password')
 
 def verify_admin_password(password: str = Header(..., alias="X-Admin-Password")):
     if password != ADMIN_PASSWORD:
