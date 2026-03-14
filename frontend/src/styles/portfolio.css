@@ -277,6 +277,7 @@ body {
   border: 3px solid var(--neon-red);
   overflow: hidden;
   box-shadow: 0 0 50px var(--neon-red-glow);
+  background-color: #000000;
 }
 
 .profile-image {
