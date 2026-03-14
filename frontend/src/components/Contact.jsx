@@ -6,6 +6,10 @@ import { Textarea } from './ui/textarea';
 import { Send, Mail, MapPin } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { aboutData } from '../mock';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const Contact = () => {
   const { toast } = useToast();
@@ -25,15 +29,37 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Mock submission
-    setTimeout(() => {
+    try {
+      const response = await axios.post(`${API}/contact`, formData);
+      
+      if (response.data.success) {
+        toast({
+          title: "Message Sent! ✓",
+          description: response.data.message,
+        });
+        setFormData({ name: '', email: '', message: '' });
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      
+      let errorMessage = "Failed to send message. Please try again.";
+      
+      if (error.response?.data?.detail) {
+        if (Array.isArray(error.response.data.detail)) {
+          errorMessage = error.response.data.detail[0].msg || errorMessage;
+        } else {
+          errorMessage = error.response.data.detail;
+        }
+      }
+      
       toast({
-        title: "Message Sent!",
-        description: "Thank you for reaching out. I'll get back to you soon.",
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
       });
-      setFormData({ name: '', email: '', message: '' });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
 
   return (

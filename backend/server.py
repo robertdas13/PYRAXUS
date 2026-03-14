@@ -1,12 +1,12 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, ConfigDict, EmailStr, field_validator
+from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 
@@ -65,6 +65,90 @@ async def get_status_checks():
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     
     return status_checks
+
+
+# Contact Form Models
+class ContactCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    message: str = Field(..., min_length=10, max_length=1000)
+
+    @field_validator('name')
+    @classmethod
+    def name_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Name cannot be empty')
+        return v.strip()
+
+    @field_validator('message')
+    @classmethod
+    def message_must_not_be_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Message cannot be empty')
+        return v.strip()
+
+
+class Contact(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    message: str
+    status: str = Field(default="new")
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# Contact Form Endpoints
+@api_router.post("/contact")
+async def submit_contact(contact_data: ContactCreate):
+    try:
+        # Create contact object
+        contact = Contact(**contact_data.model_dump())
+        
+        # Convert to dict for MongoDB
+        doc = contact.model_dump()
+        doc['createdAt'] = doc['createdAt'].isoformat()
+        
+        # Insert into database
+        result = await db.contacts.insert_one(doc)
+        
+        logger.info(f"Contact form submitted: {contact.name} ({contact.email})")
+        
+        return {
+            "success": True,
+            "message": "Message sent successfully! I'll get back to you soon.",
+            "data": {
+                "id": contact.id,
+                "createdAt": contact.createdAt.isoformat()
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error submitting contact form: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send message. Please try again later.")
+
+
+@api_router.get("/contacts")
+async def get_contacts():
+    try:
+        # Exclude MongoDB's _id field
+        contacts = await db.contacts.find({}, {"_id": 0}).to_list(1000)
+        
+        # Convert ISO string timestamps back to datetime objects
+        for contact in contacts:
+            if isinstance(contact.get('createdAt'), str):
+                contact['createdAt'] = datetime.fromisoformat(contact['createdAt'])
+        
+        # Sort by creation date (newest first)
+        contacts.sort(key=lambda x: x.get('createdAt', datetime.min), reverse=True)
+        
+        return {
+            "success": True,
+            "data": contacts
+        }
+    except Exception as e:
+        logger.error(f"Error fetching contacts: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch contacts")
 
 # Include the router in the main app
 app.include_router(api_router)
