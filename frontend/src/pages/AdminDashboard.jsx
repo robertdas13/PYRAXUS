@@ -3,7 +3,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../hooks/use-toast';
-import { Lock, Mail, Calendar, Trash2, Check, Eye, Filter, LogOut } from 'lucide-react';
+import { Lock, Mail, Calendar, Trash2, Check, Eye, Filter, LogOut, Phone } from 'lucide-react';
 import axios from 'axios';
 import '../styles/admin.css';
 
@@ -278,6 +278,10 @@ const AdminDashboard = () => {
                 <div className="contact-card-header">
                   <div className="contact-info">
                     <h3 className="contact-name">{contact.name}</h3>
+                    <a href={`tel:${contact.phone}`} className="contact-email">
+                      <Phone size={14} />
+                      {contact.phone}
+                    </a>
                     <a href={`mailto:${contact.email}`} className="contact-email">
                       <Mail size={14} />
                       {contact.email}

@@ -15,6 +15,7 @@ const Contact = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
+    phone: '',
     email: '',
     message: ''
   });
@@ -37,7 +38,7 @@ const Contact = () => {
           title: "Message Sent! ✓",
           description: response.data.message,
         });
-        setFormData({ name: '', email: '', message: '' });
+        setFormData({ name: '', phone: '', email: '', message: '' });
       }
     } catch (error) {
       console.error('Contact form error:', error);
@@ -110,6 +111,20 @@ const Contact = () => {
                   placeholder="Your name"
                   required
                   className="form-input"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="phone" className="form-label">Phone Number (India)</label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+91 XXXXX XXXXX"
+                  required
+                  className="form-input"
+                  pattern="[+]?[0-9]{10,13}"
                 />
               </div>
               <div className="form-group">

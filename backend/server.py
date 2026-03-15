@@ -70,6 +70,7 @@ async def get_status_checks():
 # Contact Form Models
 class ContactCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
+    phone: str = Field(..., min_length=10, max_length=15)
     email: EmailStr
     message: str = Field(..., min_length=10, max_length=1000)
 
@@ -78,6 +79,17 @@ class ContactCreate(BaseModel):
     def name_must_not_be_empty(cls, v: str) -> str:
         if not v or not v.strip():
             raise ValueError('Name cannot be empty')
+        return v.strip()
+
+    @field_validator('phone')
+    @classmethod
+    def phone_must_be_valid(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Phone number cannot be empty')
+        # Remove spaces and check if it's a valid number
+        phone_clean = v.strip().replace(' ', '').replace('-', '')
+        if not phone_clean.replace('+', '').isdigit():
+            raise ValueError('Phone number must contain only digits')
         return v.strip()
 
     @field_validator('message')
@@ -93,6 +105,7 @@ class Contact(BaseModel):
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
+    phone: str
     email: str
     message: str
     status: str = Field(default="new")
@@ -123,6 +136,7 @@ async def submit_contact(contact_data: ContactCreate):
         logger.info(f"You have received a new message through your PYRAXUS portfolio:")
         logger.info(f"")
         logger.info(f"Name: {contact.name}")
+        logger.info(f"Phone: {contact.phone}")
         logger.info(f"Email: {contact.email}")
         logger.info(f"Message:")
         logger.info(f"{contact.message}")
